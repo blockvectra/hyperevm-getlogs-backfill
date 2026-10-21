@@ -24,7 +24,7 @@ The 1,000-block value comes from BlockVectra's live [`/v1/chains`](https://api.b
 
 This is the HyperEVM adaptation of the existing [block-range guide example](https://docs.blockvectra.com/en/guides/getlogs-block-range/?ref=article-hyperevm-getlogs). It reads the live range and checks that the method is allowed, then prints each completed chunk. Use Node.js 24 or later, set a key and contract address, and provide a confirmed finite interval.
 
-Save as `backfill.mjs` and run with Node 20+.
+Save as `backfill.mjs` and run with Node.js 24 or later.
 
 ```js
 const { BLOCKVECTRA_API_KEY: key, LOG_ADDRESS: address, FROM_BLOCK, TO_BLOCK } = process.env;
@@ -75,7 +75,7 @@ Each output line represents a successful chunk. A failed HTTP or JSON-RPC respon
 
 ## Files
 
-- `backfill.mjs`: the script above. Requires Node 20+ and a BlockVectra API key in `BLOCKVECTRA_API_KEY`.
+- `backfill.mjs`: the script above. Requires Node.js 24 or later and a BlockVectra API key in `BLOCKVECTRA_API_KEY`.
 
 ## License
 
