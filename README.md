@@ -2,6 +2,27 @@
 
 A 30-day HyperEVM backfill is about **2,592 calls at 1,000 blocks per call**; at the documented 10- and 50-block windows, the same modeled interval takes **259,200** and **51,840 calls**, respectively. [BlockVectra's live chain catalog](https://api.blockvectra.com/v1/chains) lists `hyperevm_mainnet.max_logs_block_range` as 1,000; the comparison limits and their official sources were checked on **2026-10-12** (Alchemy [eth_getLogs documentation](https://www.alchemy.com/docs/chains/ethereum/ethereum-api-endpoints/eth-get-logs); Chainstack [Hyperliquid EVM eth_getLogs documentation](https://docs.chainstack.com/reference/hyperliquid-evm-eth-get-logs)).
 
+## Quick start
+
+Use Node.js 24 or later and an API key from the [BlockVectra console](https://console.blockvectra.com/). The script uses the authenticated HyperEVM endpoint; a keyless endpoint cannot run this log query.
+
+```sh
+git clone https://github.com/blockvectra/hyperevm-getlogs-backfill.git
+cd hyperevm-getlogs-backfill
+cp .env.example .env
+chmod 600 .env
+```
+
+Edit `.env` and fill in all four values: your API key, the contract address, and explicit `FROM_BLOCK` / `TO_BLOCK` numbers. Start with a small, confirmed interval. Decimal or `0x` block numbers are accepted; `latest` is not.
+
+```sh
+node --env-file=.env backfill.mjs > chunks.ndjson
+```
+
+Each complete output line contains `fromBlock`, `toBlock`, and the returned `result` array. An empty array is a successful query with no matching logs, not proof of complete historical coverage. If the run fails, keep the completed lines: the script stops before advancing past the failed chunk. To resume, set `FROM_BLOCK` to one more than the last complete line's `toBlock` and write the resumed run to a new output file; the script does not load checkpoints automatically.
+
+`.env` and `chunks*.ndjson` are ignored by Git. Keep your key in the local environment file; do not put it in a command argument, RPC URL, or issue report.
+
 ## Why a wide query fails
 
 `eth_getLogs` accepts an inclusive block interval. Its span is `toBlock − fromBlock + 1`, so a request is too wide when that value exceeds the chain's published `max_logs_block_range`. On BlockVectra, the response is HTTP 200 with JSON-RPC code `-32602` and reason `logs_range_too_large`; the request is not retryable. Read the current per-chain limit from [`GET /v1/chains`](https://api.blockvectra.com/v1/chains) rather than assuming every network has the same range. [BlockVectra's range guide](https://docs.blockvectra.com/en/guides/getlogs-block-range/?ref=article-hyperevm-getlogs) documents the error and limit.
